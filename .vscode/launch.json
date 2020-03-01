@@ -1,0 +1,58 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Sample Java",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"cwd": "${workspaceFolder}/modules/cli",
+			"program": "${workspaceFolder}/modules/cli/src/index.ts",
+			"runtimeVersion": "12.14.1",
+			"args": [
+				"${workspaceFolder}/../myhomecare-co-nz/src/main/webapp/WEB-INF/swagger.yml",
+				"-c",
+				"${workspaceFolder}/geneva.json",
+				"-g",
+				"${workspaceFolder}/modules/generators/java",
+				"-o",
+				"${workspaceFolder}/../myhomecare-co-nz/src/main/java/"
+			],
+			// "preLaunchTask": "build",
+			"outFiles": [
+				"${workspaceFolder}/**/*.js"
+			],
+			"outputCapture": "std",
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Sample TypeScript",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"cwd": "${workspaceFolder}/modules/cli",
+			"program": "${workspaceFolder}/modules/cli/src/index.ts",
+			"runtimeVersion": "12.14.1",
+			"args": [
+				"${workspaceFolder}/../myhomecare-co-nz/src/main/webapp/WEB-INF/swagger.yml",
+				"-c",
+				"${workspaceFolder}/geneva.json",
+				"-g",
+				"${workspaceFolder}/modules/generators/typescript-fetch-client",
+				"-o",
+				"${workspaceFolder}/../myhomecare-co-nz/src/main/app/gen/api"
+			],
+			// "preLaunchTask": "build",
+			"outFiles": [
+				"${workspaceFolder}/**/*.js"
+			],
+			"outputCapture": "std",
+		}
+	]
+}
