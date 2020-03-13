@@ -49,6 +49,7 @@ export interface ChurchillColumnMove extends ChurchillMove {
 	count: number
 	card: Card
 	cardTo?: Card
+	cardFrom?: Card
 	notCardTo: CardObjectId[]
 }
 
@@ -199,6 +200,9 @@ export class ChurchillEngine implements Engine<ChurchillState, ChurchillMove> {
 
 							// TODO prevent king-lead column moves unless they move either side of a non-king lead column
 
+
+							const cardFrom = stack.open.length > count ? stack.open[stack.open.length - count - 1] : undefined
+
 							const columnMove: ChurchillColumnMove = {
 								type: ChurchillMoveType.COLUMN,
 								from: stackIndex,
@@ -206,6 +210,7 @@ export class ChurchillEngine implements Engine<ChurchillState, ChurchillMove> {
 								count,
 								card,
 								cardTo: target,
+								cardFrom,
 								notCardTo: [],
 							}
 							columnMoves.push(columnMove)
@@ -214,23 +219,24 @@ export class ChurchillEngine implements Engine<ChurchillState, ChurchillMove> {
 				}
 
 				for (let i = 0; i < columnMoves.length; i++) {
+					const move = columnMoves[i]
 					for (let j = 0; j < columnMoves.length; j++) {
 						// if (i !== j) {
 						const otherMove = columnMoves[j]
 						/* If there are multiple places this card could move, block the other choices if we choose this move */
-						columnMoves[i].notCardTo.push(otherMove.cardTo ? otherMove.cardTo.id : state.stacks[otherMove.to].id)
+						move.notCardTo.push(otherMove.cardTo ? otherMove.cardTo.id : state.stacks[otherMove.to].id)
 						// }
 					}
 
 					// TODO if we're moving more than 1 card, let's also block moves of fewer cards, so we avoid visiting
 					// extra states.
 
-					// TODO prevent move backs where we move off and then back
+					/* Prevent move backs where we move off and then back */
+					move.notCardTo.push(move.cardFrom ? move.cardFrom.id : state.stacks[move.from].id)
 
 					/* Now that we've moved a card onto another, prevent us repeating that in decendants of this
 					   move, to avoid infinite loops.
 					 */
-					// const move = columnMoves[i]
 					// move.notCardTo.push(move.cardTo ? move.cardTo.id : state.stacks[move.to].id)
 				}
 
