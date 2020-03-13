@@ -16,7 +16,7 @@ const initialState = createChurchillState({
 		'3S|6C',
 		'4S JH|4D',
 		'2H 7D 9S|QC',
-		'?? 7S JS 9C|6S',
+		'XS 7S JS 9C|6S',
 		'2H 2D 2C 7D|XD',
 		'3D QS 4D|5C',
 		'6D 4H|7C',
