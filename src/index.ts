@@ -1,6 +1,7 @@
 import { Engine, Score, SerializedState, END, START } from './types'
 import * as _ from 'lodash'
 import { pushAtSortPosition } from 'array-push-at-sort-position'
+import QuickLRU from 'quick-lru'
 
 export interface Solution<State, Move> {
 	state: State
@@ -73,7 +74,9 @@ export function debugSolution<State, Move>(solution: Solution<State, Move>, engi
 
 export function solve<State, Move>(initialState: State, maxSteps: number, engine: Engine<State, Move>): Solution<State, Move> | null {
 	/* Keep track of states we've seen and what their score was */
-	const seen: Map<SerializedState, Solution<State, Move>> = new Map()
+	const seen: QuickLRU<SerializedState, Solution<State, Move>> = new QuickLRU({
+		maxSize: 10000,
+	})
 	// const collisionTest: Map<SerializedState, State> = new Map()
 	
 	/* States we are still to consider moves from. Only new states are added. States are scored before being added. */
