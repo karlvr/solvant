@@ -93,6 +93,7 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 	let steps = 0
 	let bestMovesSoFar = 0
 	let bestSolutionSoFar: Solution<State, Move> | undefined
+	let alreadySeenCount = 0
 
 	while (open.length) {
 		// console.log(`Open size ${open.length}, seen size ${seen.size}`)
@@ -131,6 +132,7 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 				}
 
 				// console.log('Already seen')
+				alreadySeenCount += 1
 				continue
 			}
 
@@ -175,7 +177,7 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 
 		steps += 1
 		if (steps % 10000 === 0) {
-			console.log(`${steps} steps, ${open.length} open, ${seen.size} seen, ${winners.length} winners (best moves ${bestMovesSoFar})`)
+			console.log(`${steps} steps, ${open.length} open, ${seen.size} seen (${alreadySeenCount} avoided), ${winners.length} winners (best moves ${bestMovesSoFar})`)
 			if (winners.length) {
 				let bestMoves = 0
 				let bestSolution: Solution<State, Move> | undefined
