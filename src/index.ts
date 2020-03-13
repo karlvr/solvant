@@ -1,15 +1,7 @@
-import { Engine, Score, SerializedState, END, START } from './types'
+import { Engine, Score, Solution, SerializedState, END, START } from './types'
 import * as _ from 'lodash'
 import { pushAtSortPosition } from 'array-push-at-sort-position'
 import QuickLRU from 'quick-lru'
-
-export interface Solution<State, Move> {
-	state: State
-	move?: Move
-	moves: number
-	previous?: Solution<State, Move>
-	score: Score
-}
 
 function compareSolutionScoresHighLow<State, Move>(a: Solution<State, Move>, b: Solution<State, Move>) {
 	if (a.score === END && b.score === END) {
