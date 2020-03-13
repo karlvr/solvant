@@ -20,8 +20,14 @@ function compareSolutionScoresHighLow<State, Move>(a: Solution<State, Move>, b: 
 }
 
 function compareSolutionScoresLowHigh<State, Move>(a: Solution<State, Move>, b: Solution<State, Move>) {
-	if (a.score === END && b.score === END) {
-		return 0
+	if (a.score === b.score) {
+		if (a.moves < b.moves) {
+			return 1
+		} else if (a.moves > b.moves) {
+			return -1
+		} else {
+			return 0
+		}
 	} else if (a.score === END) {
 		return 1
 	} else if (b.score === END) {
