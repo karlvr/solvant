@@ -290,8 +290,10 @@ export default class ChurchillEngine implements Engine<ChurchillState, Churchill
 					// TODO if we're moving more than 1 card, let's also block moves of fewer cards, so we avoid visiting
 					// extra states.
 
+					const fromStack = state.stacks[move.from]
+
 					/* Prevent move backs where we move off and then back */
-					move.notCardTo.push(move.cardFrom ? move.cardFrom.id : state.stacks[move.from].id)
+					move.notCardTo.push(move.cardFrom ? move.cardFrom.id : fromStack.id)
 
 					/* Now that we've moved a card onto another, prevent us repeating that in decendants of this
 					   move, to avoid infinite loops.
