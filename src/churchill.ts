@@ -220,21 +220,33 @@ export class ChurchillEngine implements Engine<ChurchillState, ChurchillMove> {
 					break
 				}
 
+				/* A list of card and stack ids that `card` shouldn't be moved onto */
 				const notOnList = state.notOn.get(card.id)
 
 				const columnMoves: ChurchillColumnMove[] = []
-				OTHER: for (let otherStackIndex = 0; otherStackIndex < bottomOfStacks.length; otherStackIndex++) {
-					if (stackIndex !== otherStackIndex) {
-						const target = bottomOfStacks[otherStackIndex]
+				OTHER: for (let targetStackIndex = 0; targetStackIndex < bottomOfStacks.length; targetStackIndex++) {
+					if (stackIndex !== targetStackIndex) {
+						const target = bottomOfStacks[targetStackIndex]
 						if (checkStackable(card, target)) {
-							
-							
+							/* Found that `card` could be moved from `stack` onto `target` in stack `targetStackIndex`.
+							   If `target` is `undefined` then the target stack is empty.
+							 */
 							
 							if (notOnList) {
-								for (const other of notOnList) {
-									if ((target && other === target.id) || (!target && other === state.stacks[otherStackIndex].id)) {
-										// console.log('AVOID LOOP')
-										continue OTHER
+								if (target) {
+									for (const notOn of notOnList) {
+										if (notOn === target.id) {
+											// console.log('AVOID LOOP')
+											continue OTHER
+										}
+									}
+								} else {
+									const targetStackId = state.stacks[targetStackIndex].id
+									for (const notOn of notOnList) {
+										if (notOn === targetStackId) {
+											// console.log('AVOID LOOP')
+											continue OTHER
+										}
 									}
 								}
 							}
@@ -253,7 +265,7 @@ export class ChurchillEngine implements Engine<ChurchillState, ChurchillMove> {
 							const columnMove: ChurchillColumnMove = {
 								type: ChurchillMoveType.COLUMN,
 								from: stackIndex,
-								to: otherStackIndex,
+								to: targetStackIndex,
 								count,
 								card,
 								cardTo: target,
