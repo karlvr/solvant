@@ -1,5 +1,5 @@
 import { Face, END } from '../src/types'
-import { createChurchillState, debugChurchillState, ChurchillEngine, ChurchillMoveType } from '../src/churchill'
+import ChurchillEngine, { createChurchillState, debugChurchillState, ChurchillMoveType } from '../src/churchill'
 import { solve, debugSolution } from '.'
 
 test('move to victory', () => {

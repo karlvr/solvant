@@ -1,4 +1,4 @@
-import { createChurchillState, ChurchillEngine } from './churchill'
+import ChurchillEngine, { createChurchillState } from './churchill'
 import { solve, debugSolution } from '.'
 
 const initialState = createChurchillState({

@@ -149,7 +149,7 @@ Array.prototype.peek = function() {
 	return this[this.length - 1]
 }
 
-export class ChurchillEngine implements Engine<ChurchillState, ChurchillMove> {
+export default class ChurchillEngine implements Engine<ChurchillState, ChurchillMove> {
 	public movesForState(state: ChurchillState): ChurchillMove[] {
 		const result: ChurchillMove[] = []
 
