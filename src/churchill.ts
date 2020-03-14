@@ -309,7 +309,7 @@ export default class ChurchillEngine implements Engine<ChurchillState, Churchill
 		return result
 	}
 	
-	public scoreForState(state: ChurchillState): number {
+	public scoreForState(state: ChurchillState, moves: number): number {
 		if (checkComplete(state)) {
 			return END
 		}
@@ -345,6 +345,10 @@ export default class ChurchillEngine implements Engine<ChurchillState, Churchill
 		/* The fewer closed cards the better */
 		const CLOSED_CARD_FACTOR = 2.0
 		result -= state.stacks.reduce((total, stack) => total + stack.closed.length, 0) * CLOSED_CARD_FACTOR
+
+		/* The fewer moves the better */
+		const MOVES_FACTOR = 0.1
+		result -= moves * MOVES_FACTOR	
 
 		/* Make sure we never accidentally return END as our score */
 		if (result === END) {

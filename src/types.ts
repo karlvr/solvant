@@ -1,6 +1,6 @@
 export interface Engine<State, Move> {
 	movesForState: (state: State) => Move[]
-	scoreForState: (state: State) => Score
+	scoreForState: (state: State, moves: number) => Score
 	applyMoveToState: (move: Move, state: State) => State
 	serializeState: (state: State) => SerializedState
 	stateToString: (state: State) => string

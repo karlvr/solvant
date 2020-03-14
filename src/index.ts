@@ -193,7 +193,7 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 				continue
 			}
 
-			const newScore = engine.scoreForState(newState)
+			const newScore = engine.scoreForState(newState, current.moves + 1)
 			const newSolution: OpenSolution<State, Move> = {
 				state: newState,
 				lastMove: move,
