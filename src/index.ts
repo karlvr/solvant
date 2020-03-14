@@ -30,7 +30,15 @@ function compareSolutionScoresHighLow<Move>(a: Solution<Move>, b: Solution<Move>
 	}
 }
 
-function compareSolutionScoresLowHigh<Move>(a: Solution<Move>, b: Solution<Move>) {
+function compareSolutionsAdaptive<Move>(a: Solution<Move>, b: Solution<Move>) {
+	if (a.moves < 5 || b.moves < 5) {
+		return compareSolutionsBreadthFirst(a, b)
+	} else {
+		return compareSolutionDepthFirst(a, b)
+	}
+}
+
+function compareSolutionDepthFirst<Move>(a: Solution<Move>, b: Solution<Move>) {
 	if (a.score === b.score) {
 		if (a.moves < b.moves) {
 			return 1
@@ -39,6 +47,27 @@ function compareSolutionScoresLowHigh<Move>(a: Solution<Move>, b: Solution<Move>
 		} else {
 			return 0
 		}
+	} else if (a.score === END) {
+		return 1
+	} else if (b.score === END) {
+		return -1
+	} else if (a.score > b.score) {
+		return 1
+	} else if (a.score < b.score) {
+		return -1
+	} else {
+		return 0
+	}
+}
+
+function compareSolutionsBreadthFirst<Move>(a: Solution<Move>, b: Solution<Move>) {
+	if (a.moves < b.moves) {
+		return 1
+	} else if (a.moves > b.moves) {
+		return -1
+	}
+	if (a.score === b.score) {
+		return 0
 	} else if (a.score === END) {
 		return 1
 	} else if (b.score === END) {
@@ -192,7 +221,7 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 
 		/* Breadth first */
 		for (const newSolution of newSolutions) {
-			pushAtSortPosition(open, newSolution, compareSolutionScoresLowHigh, true)
+			pushAtSortPosition(open, newSolution, compareSolutionsAdaptive, true)
 		}
 
 		/* Check sorting is working */
