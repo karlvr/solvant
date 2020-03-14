@@ -630,3 +630,15 @@ function stackIsLeadByKing(stack: CardStack): boolean {
 
 	return stack.open[0].face === Face.KING
 }
+
+export function allCards(state: ChurchillState) {
+	const result: Card[] = []
+	result.push(...state.deck)
+	result.push(...state.devils)
+	result.push(...state.victory)
+	for (const stack of state.stacks) {
+		result.push(...stack.closed)
+		result.push(...stack.open)
+	}
+	return result
+}

@@ -165,3 +165,42 @@ export function debugCardStacks(cardStacks: CardStack[]): string {
 
 	return result
 }
+
+/** Check that the array of cards represents the given number of full decks. */
+export function sanityCheck(cards: Card[], decks: number) {
+	const errors: string[] = []
+	const expectedCards = makeDecks(decks)
+	for (const card of cards) {
+		const found = expectedCards.findIndex(ex => cardIsEqual(ex, card))
+		if (found !== -1) {
+			expectedCards.splice(found, 1)
+		} else if (card.face !== Face.UNKNOWN) {
+			errors.push(`Found an unexpected ${cardToString(card)}`)
+		}
+	}
+
+	for (const card of expectedCards) {
+		errors.push(`Missing a ${cardToString(card)}`)
+	}
+
+	if (errors.length) {
+		throw new Error(errors.join('\n'))
+	}
+}
+
+function makeDecks(count: number): Card[] {
+	const result: Card[] = []
+	let id = 1
+	for (let i = 0; i < count; i++) {
+		for (const suit of [Suit.HEARTS, Suit.DIAMONDS, Suit.CLUBS, Suit.SPADES]) {
+			for (let face = Face.ACE; face <= Face.KING; face++) {
+				result.push({
+					face,
+					suit,
+					id: id++,
+				})
+			}
+		}
+	}
+	return result
+}
