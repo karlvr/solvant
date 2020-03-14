@@ -321,7 +321,7 @@ export default class ChurchillEngine implements Engine<ChurchillState, Churchill
 		let result = 0
 
 		/* The more cards in the victory row the better */
-		const VICTORY_FACTOR = 3.0
+		const VICTORY_FACTOR = 6.0
 		result += state.victory.reduce((total, card) => total + card.face, 0) * VICTORY_FACTOR
 
 		/* The more cards you've drawn the better (a little) */
@@ -329,7 +329,8 @@ export default class ChurchillEngine implements Engine<ChurchillState, Churchill
 		result -= state.deck.length * DECK_FACTOR
 
 		/* The fewer cards in the devils row the better */
-		result -= state.devils.length
+		const DEVIL_FACTOR = 3.0
+		result -= state.devils.length * DEVIL_FACTOR
 
 		/* The more and longer stacks starting with kings the better */
 		const KING_COLUMN_FACTOR = 2.0
