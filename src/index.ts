@@ -3,7 +3,18 @@ import * as _ from 'lodash'
 import { pushAtSortPosition } from 'array-push-at-sort-position'
 import QuickLRU from 'quick-lru'
 
-function compareSolutionScoresHighLow<State, Move>(a: Solution<State, Move>, b: Solution<State, Move>) {
+export interface Solution<Move> {
+	score: Score
+	moves: number
+	lastMove?: Move
+	previous?: Solution<Move>
+}
+
+interface OpenSolution<State, Move> extends Solution<Move> {
+	state: State
+}
+
+function compareSolutionScoresHighLow<Move>(a: Solution<Move>, b: Solution<Move>) {
 	if (a.score === END && b.score === END) {
 		return 0
 	} else if (a.score === END) {
@@ -19,7 +30,7 @@ function compareSolutionScoresHighLow<State, Move>(a: Solution<State, Move>, b: 
 	}
 }
 
-function compareSolutionScoresLowHigh<State, Move>(a: Solution<State, Move>, b: Solution<State, Move>) {
+function compareSolutionScoresLowHigh<Move>(a: Solution<Move>, b: Solution<Move>) {
 	if (a.score === b.score) {
 		if (a.moves < b.moves) {
 			return 1
@@ -41,7 +52,7 @@ function compareSolutionScoresLowHigh<State, Move>(a: Solution<State, Move>, b: 
 	}
 }
 
-function compareSolutionMoves<State, Move>(a: Solution<State, Move>, b: Solution<State, Move>) {
+function compareSolutionMoves<State, Move>(a: Solution<Move>, b: Solution<Move>) {
 	if (a.moves < b.moves) {
 		return -1
 	} else if (a.moves > b.moves) {
@@ -51,54 +62,70 @@ function compareSolutionMoves<State, Move>(a: Solution<State, Move>, b: Solution
 	}
 }
 
-export function debugSolution<State, Move>(solution: Solution<State, Move>, engine: Engine<State, Move>, omitMoves?: boolean, lastMoves?: number): string {
-	let result = `${solution.moves} moves, score ${solution.score}\n`
-	if (!omitMoves) {
-		let previous: Solution<State, Move> | undefined = solution
-		const moves: Move[] = []
-		while (previous && (!lastMoves || moves.length < lastMoves)) {
-			if (previous.move) {
-				moves.push(previous.move)
-			}
-			previous = previous.previous
+function solutionToMoves<Move>(solution: Solution<Move>): Move[] {
+	let previous: Solution<Move> | undefined = solution
+	const moves: Move[] = []
+	while (previous) {
+		if (previous.lastMove) {
+			moves.push(previous.lastMove)
 		}
-		result += moves.reverse().map(move => engine.moveToString(move)).join('\n')
+		previous = previous.previous
+	}
+	return moves.reverse()
+}
+
+export function debugSolution<State, Move>(solution: Solution<Move>, initialState: State, engine: Engine<State, Move>, omitMoves?: boolean, lastMoves?: number): string {
+	let result = `${solution.moves} moves, score ${solution.score}\n`
+	const moves = solutionToMoves(solution)
+	if (!omitMoves) {
+		let movesToShow = moves
+		if (lastMoves && lastMoves < movesToShow.length) {
+			movesToShow = movesToShow.slice(movesToShow.length - lastMoves)
+		}
+		result += movesToShow.map(move => engine.moveToString(move)).join('\n')
 		result += '\n\n'
 	}
-	result += engine.stateToString(solution.state)
+
+	let state = initialState
+	for (const move of moves) {
+		state = engine.applyMoveToState(move, state)
+	}
+	
+	result += engine.stateToString(state)
 
 	return result
 }
 
-export function solve<State, Move>(initialState: State, maxSteps: number, engine: Engine<State, Move>): Solution<State, Move> | null {
+export function solve<State, Move>(initialState: State, maxSteps: number, engine: Engine<State, Move>): Solution<Move> | null {
 	/* Keep track of states we've seen and what their score was */
-	const seen: QuickLRU<SerializedState, Solution<State, Move>> = new QuickLRU({
+	const seen: QuickLRU<SerializedState, Solution<Move>> = new QuickLRU({
 		maxSize: 10000,
 	})
 	// const collisionTest: Map<SerializedState, State> = new Map()
 	
 	/* States we are still to consider moves from. Only new states are added. States are scored before being added. */
-	const open: Solution<State, Move>[] = []
+	const open: OpenSolution<State, Move>[] = []
 
-	const winners: Solution<State, Move>[] = []
+	const winners: Solution<Move>[] = []
 
 	open.push({
 		state: initialState,
-		moves: 0,
 		score: START,
+		moves: 0,
 	})
 
 	let steps = 0
 	let bestMovesSoFar = 0
-	let bestSolutionSoFar: Solution<State, Move> | undefined
+	let bestSolutionSoFar: Solution<Move> | undefined
 	let alreadySeenCount = 0
+	let improvedAlreadySeenCount = 0
 
 	while (open.length) {
 		// console.log(`Open size ${open.length}, seen size ${seen.size}`)
 		const current = open.pop()!
 
 		const moves = engine.movesForState(current.state)
-		const newSolutions: Solution<State, Move>[] = []
+		const newSolutions: Solution<Move>[] = []
 		for (const move of moves) {
 			const newState = engine.applyMoveToState(move, current.state)
 
@@ -121,12 +148,15 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 			const alreadySeen = seen.get(newSerializedState)
 			if (alreadySeen) {
 				if (alreadySeen.moves > current.moves + 1) {
-					/* We have found a more efficient method to get to this state */
+					/* We have found a more efficient method to get to a state we've already been to,
+					   so we update the existing solution.
+					   */
 					// console.log(`Improved moves from ${alreadySeen.moves} to ${current.moves + 1}`)
 
 					alreadySeen.moves = current.moves + 1
-					alreadySeen.move = move
+					alreadySeen.lastMove = move
 					alreadySeen.previous = current
+					improvedAlreadySeenCount += 1
 				}
 
 				// console.log('Already seen')
@@ -135,15 +165,20 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 			}
 
 			const newScore = engine.scoreForState(newState)
-			const newSolution: Solution<State, Move> = {
+			const newSolution: OpenSolution<State, Move> = {
 				state: newState,
-				move,
+				lastMove: move,
 				moves: current.moves + 1,
 				previous: current,
 				score: newScore,
 			}
 
-			seen.set(newSerializedState, newSolution)
+			seen.set(newSerializedState, {
+				moves: newSolution.moves,
+				score: newSolution.score,
+				lastMove: newSolution.lastMove,
+				previous: newSolution.previous,
+			})
 				
 			if (newScore === END) {
 				winners.push(newSolution)
@@ -160,25 +195,21 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 			pushAtSortPosition(open, newSolution, compareSolutionScoresLowHigh, true)
 		}
 
-		/* Sort open to look at best solutions first */
-		// open.sort(compareSolutionScores).reverse()
-
 		/* Check sorting is working */
 		// let prevScore = open[0].score
 		// for (const next of open) {
-		// 	if (next.score > prevScore) {
+		// 	if (next.score < prevScore) {
 		// 		throw new Error('Bad sort')
 		// 	}
 		// 	prevScore = next.score
 		// }
-		// console.log(`first ${open[0].score} last ${open[open.length - 1].score}`)
 
 		steps += 1
 		if (steps % 10000 === 0) {
-			console.log(`${steps} steps, ${open.length} open, ${seen.size} seen (${alreadySeenCount} avoided), ${winners.length} winners (best moves ${bestMovesSoFar})`)
+			console.log(`${steps} steps, ${open.length} open, ${seen.size} seen (${alreadySeenCount} avoided, ${improvedAlreadySeenCount} improved), ${winners.length} winners (best moves ${bestMovesSoFar})`)
 			if (winners.length) {
 				let bestMoves = 0
-				let bestSolution: Solution<State, Move> | undefined
+				let bestSolution: Solution<Move> | undefined
 				for (const winner of winners) {
 					if (bestMoves === 0 || winner.moves < bestMoves) {
 						bestMoves = winner.moves
@@ -188,7 +219,7 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 
 				if (bestMovesSoFar === 0 || bestMoves < bestMovesSoFar) {
 					console.log(`Best move is ${bestMoves}`)
-					console.log(debugSolution(bestSolution!, engine))
+					console.log(debugSolution(bestSolution!, initialState, engine))
 
 					bestMovesSoFar = bestMoves
 					bestSolutionSoFar = bestSolution
@@ -199,7 +230,7 @@ export function solve<State, Move>(initialState: State, maxSteps: number, engine
 
 		if (steps % 10000 === 0) {
 			console.log('Current solution')
-			console.log(debugSolution(current, engine, false, 20))
+			console.log(debugSolution(current, initialState, engine, false, 20))
 		}
 		// console.log('Current solution')
 		// console.log(debugSolution(current, engine, true))

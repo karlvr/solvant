@@ -30,7 +30,7 @@ const engine = new ChurchillEngine()
 const result = solve(initialState, 0, engine)
 
 if (result) {
-	console.log(debugSolution(result, engine))
+	console.log(debugSolution(result, initialState, engine))
 } else {
 	console.log('Failed to find a solution')
 }

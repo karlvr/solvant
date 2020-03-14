@@ -67,11 +67,3 @@ export interface CardStack {
 	/** The face up cards at the bottom of the stack, in order from top to bottom */
 	open: Card[]
 }
-
-export interface Solution<State, Move> {
-	state: State
-	move?: Move
-	moves: number
-	previous?: Solution<State, Move>
-	score: Score
-}
