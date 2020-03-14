@@ -1,4 +1,4 @@
-import { Engine, Score, Solution, SerializedState, END, START } from './types'
+import { Engine, Score, SerializedState, END, START } from './types'
 import * as _ from 'lodash'
 import { pushAtSortPosition } from 'array-push-at-sort-position'
 import QuickLRU from 'quick-lru'
