@@ -231,6 +231,9 @@ export default class ChurchillEngine implements Engine<ChurchillState, Churchill
 							/* Found that `card` could be moved from `stack` onto `target` in stack `targetStackIndex`.
 							   If `target` is `undefined` then the target stack is empty.
 							 */
+							if (card.face === Face.KING && !validKingMove(stackIndex, targetStackIndex, state)) {
+								continue
+							}
 							
 							if (notOnList) {
 								if (target) {
@@ -256,9 +259,6 @@ export default class ChurchillEngine implements Engine<ChurchillState, Churchill
 							// 	console.log('REPEAT')
 							// 	continue
 							// }
-
-							// TODO prevent king-lead column moves unless they move either side of a non-king lead column
-
 
 							const cardFrom = stack.open.length > count ? stack.open[stack.open.length - count - 1] : undefined
 
@@ -440,6 +440,24 @@ function checkStackable(card: Card, bottomOfStack: Card | undefined): boolean {
 	const cardColour = suitToColour(card.suit)
 	const bottomOfStackColour = suitToColour(bottomOfStack.suit)
 	return (cardColour !== bottomOfStackColour && card.face + 1 === bottomOfStack.face)
+}
+
+/**
+ * A king move is only valid if it crosses a stack that isn't lead by a king and isn't empty,
+ * otherwise it's pointless.
+ * @param fromStackIndex 
+ * @param toStackIndex 
+ * @param state 
+ */
+function validKingMove(fromStackIndex: number, toStackIndex: number, state: ChurchillState): boolean {
+	const minStackIndex = Math.min(fromStackIndex, toStackIndex)
+	const maxStackIndex = Math.max(fromStackIndex, toStackIndex)
+	for (let i = minStackIndex + 1; i < maxStackIndex; i++) {
+		if (state.stacks[i].open.length > 0 && (state.stacks[i].closed.length > 0 || state.stacks[i].open[0].face !== Face.KING)) {
+			return true
+		}
+	}
+	return false
 }
 
 /**
