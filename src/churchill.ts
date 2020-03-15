@@ -608,17 +608,36 @@ function applyColumnMoveToState(move: ChurchillColumnMove, state: ChurchillState
 			// fromStack.lastCardRemoved = removed[0].id
 		}
 
-		for (const other of move.notCardTo) {
-			let notOnList = draft.notOn.get(move.card.id)
+		function addToNotOnList(card: Card, otherId: number) {
+			let notOnList = draft.notOn.get(card.id)
 			if (!notOnList) {
 				notOnList = []
-				draft.notOn.set(move.card.id, notOnList)
+				draft.notOn.set(card.id, notOnList)
 			}
-			notOnList.push(other)
+			notOnList.push(otherId)
+		}
+
+		for (const otherId of move.notCardTo) {
+			addToNotOnList(move.card, otherId)
+		}
+
+		if (move.card.face === Face.KING && !fromStack.closed.length && !fromStack.open.length) {
+			/* We're moving a king between empty columns, so prevent any other free kings moving to 
+			   our old column until the next deck draw, so we don't swap around columns of kings
+			   thinking we're doing something.
+			 */
+			const kings = findMovableKings(draft.stacks)
+			for (const king of kings) {
+				addToNotOnList(king, fromStack.id)
+			}
 		}
 
 		// toStack.lastCardRemoved = undefined
 	})
+}
+
+function findMovableKings(stacks: CardStack[]): Card[] {
+	return stacks.filter(stackIsLeadByKing).map(stack => stack.open[0])
 }
 
 function stackIsLeadByKing(stack: CardStack): boolean {
