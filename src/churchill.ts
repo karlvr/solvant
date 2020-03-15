@@ -343,12 +343,12 @@ export default class ChurchillEngine implements Engine<ChurchillState, Churchill
 		result -= state.stacks.reduce((total, stack) => total + countRunsInStack(stack), 0) * RUN_FACTOR
 
 		/* It's worse to have more runs on top of closed cards as it makes them harder to reveal */
-		const RUNS_ON_TOP_OF_CLOSED_FACTOR = 2.0
-		result -= state.stacks.reduce((total, stack) => total + (stack.closed.length ? countRunsInStack(stack) : 0), 0) * RUNS_ON_TOP_OF_CLOSED_FACTOR
+		// const RUNS_ON_TOP_OF_CLOSED_FACTOR = 0.5
+		// result -= state.stacks.reduce((total, stack) => total + (stack.closed.length ? countRunsInStack(stack) : 0), 0) * RUNS_ON_TOP_OF_CLOSED_FACTOR
 
 		/* The fewer closed cards the better */
-		const CLOSED_CARD_FACTOR = 2.0
-		result -= state.stacks.reduce((total, stack) => total + stack.closed.length, 0) * CLOSED_CARD_FACTOR
+		// const CLOSED_CARD_FACTOR = 2.0
+		// result -= state.stacks.reduce((total, stack) => total + stack.closed.length, 0) * CLOSED_CARD_FACTOR
 
 		/* The fewer moves the better */
 		const MOVES_FACTOR = 0.1
