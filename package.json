@@ -27,7 +27,7 @@
   "dependencies": {
     "array-push-at-sort-position": "^1.2.0",
     "bignumber.js": "^9.0.0",
-    "immer": "^5.3.6",
+    "immer": "^8.0.1",
     "lodash": "^4.17.15",
     "object-hash": "^2.0.3",
     "quick-lru": "^5.0.0"
